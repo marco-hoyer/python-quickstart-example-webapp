@@ -1,0 +1,156 @@
+{% extends "template.html" %}
+
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+
+
+<div class="container">
+    <div class="jumbotron">
+        <h1>Example Webapp</h1>
+
+        <p class="lead">
+            This showcases some examples on how to make fancy websites.
+        </p>
+    </div>
+
+    <div class="row-fluid">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3>Settings</h3>
+            </div>
+            <div class="panel-body">
+                <div class="col-md-4">
+                    <h3>Info</h3>
+                    <strong>Hostname:</strong> {{ hostname }}<br>
+                </div>
+                <div class="col-md-4">
+                    <h3>Statistics</h3>
+
+                    <div id="area" class="epoch category20" style="height: 200px; margin-left:50px;">
+                        <div id="pie-chart" style="width: 200px; height: 200px; margin: 20px;"></div>
+                    </div>
+                    <script>
+                        var pieData = [
+                            { label: 'Successful ({{ pie_chart_stats.success }})', value: {{ pie_chart_stats.success }} },
+                            { label: 'Failed ({{ pie_chart_stats.error }})', value: {{ pie_chart_stats.error }} }
+                        ]
+                        $('#pie-chart').epoch({
+                            type: 'pie',
+                            data: pieData
+                        });
+
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3>Fancy Table</h3>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="display table" width="100%" id="statsTable">
+                        <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Result</th>
+                            <th>Message</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td>{{ event.source }}</td>
+                            <td>{{ event.start }}</td>
+                            <td>{{ event.end }}</td>
+                            <td>{{ event.state }}</td>
+                            <td>{{ event.message }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <script>
+                        $(document).ready(function(){
+                            $('#statsTable').dataTable( {
+                                'order': [[ 1, "desc" ]]
+                            });
+                        });
+
+
+
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <div class="row-fluid">
+            <p id="sync-status"></p><br>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Streaming events</h3>
+                </div>
+                <div class="panel-body">
+                    <button type="button" id="syncButton" class="btn btn-success">Alle Shops Synchronisieren
+                    </button>
+
+                    <br>
+                    <br>
+
+                    <p id="events"></p><br>
+                    <script>
+                        if(typeof(EventSource) !== "undefined") {
+                            var source = new EventSource('/sync-event-stream');
+                            source.addEventListener('message', function(event) {
+                                document.getElementById("events").innerHTML = event.data
+                                // console.log(event.data);
+                            }, false);
+                        }
+
+                        var sync = function ( shop ) {
+                            document.getElementById("events").innerHTML = ""
+                            $('.alert').fadeOut();
+
+                            $.post( "/run-sync", {"shop": shop} ,function( data ) {
+                                document.getElementById("sync-status").innerHTML = '<div class="alert ' + data.alert + '" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + data.message + '</div>';
+                                window.setTimeout(function() { $(".alert").alert('close'); }, 30000);
+                            }).fail(function() {
+                                document.getElementById("sync-status").innerHTML = '<div class="alert alert-danger" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> <strong>Achtung! </strong>Die Serveranfrage ist fehlgeschlagen</div>';
+                                window.setTimeout(function() { $(".alert").alert('close'); }, 30000);
+                            });
+                        };
+
+                        $('#syncButton').click(function () {
+                            sync("");
+                        });
+
+
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footer %}
+<hr>
+<div id="footer">
+    <div class="container">
+        <p class="text-muted credit">
+            {{ super() }}
+        </p>
+    </div>
+</div>
+
+
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+{% endblock %}
