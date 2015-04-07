@@ -1,5 +1,5 @@
 import argparse
-from instance_inventory import webapp
+from webadmin import webapp
 
 
 def parse_arguments():

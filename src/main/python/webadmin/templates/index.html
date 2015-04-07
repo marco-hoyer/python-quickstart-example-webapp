@@ -98,19 +98,13 @@
                     <h3>Streaming events</h3>
                 </div>
                 <div class="panel-body">
-                    <button type="button" id="syncButton" class="btn btn-success">Alle Shops Synchronisieren
-                    </button>
-
-                    <br>
-                    <br>
-
                     <p id="events"></p><br>
                     <script>
                         if(typeof(EventSource) !== "undefined") {
-                            var source = new EventSource('/sync-event-stream');
+                            var source = new EventSource('/network-counters-stream');
                             source.addEventListener('message', function(event) {
                                 document.getElementById("events").innerHTML = event.data
-                                // console.log(event.data);
+                                console.log(event.data);
                             }, false);
                         }
 
